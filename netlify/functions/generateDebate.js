@@ -10,9 +10,14 @@ exports.handler = async (event) => {
   });
   const openai = new OpenAIApi(configuration);
 
-  const prompt = `Create a ${tone.toLowerCase()} debate between ${fighter1} and ${fighter2} on the topic "${topic}". 
-  Each character should speak 5 times. Make it funny, engaging, and in-character. Format as:
-  [${fighter1}]: ...\n[${fighter2}]: ...\n...`;
+  const prompt = `You are writing a ${tone.toLowerCase()} internet-style parody debate between ${fighter1} and ${fighter2} on the topic "${topic}".
+Use exaggerated personalities, modern slang, meme references, sarcasm, and surreal logic.
+Make it sound like a viral YouTube comment war between two iconic characters.
+Each character should speak 5 times, alternating, starting with ${fighter1}.
+Format it exactly as:
+[${fighter1}]: ...
+[${fighter2}]: ...
+...`;
 
   try {
     const completion = await openai.createChatCompletion({
@@ -20,7 +25,7 @@ exports.handler = async (event) => {
       messages: [
         {
           role: "system",
-          content: "You are simulating a fictional debate between two famous characters. Each will speak 5 times in alternating order, in character, and based on the tone requested."
+          content: "You are simulating a bold, ridiculous, and very funny internet-style fictional debate between two famous characters. Be unpredictable and creative, but safe."
         },
         {
           role: "user",
@@ -28,7 +33,7 @@ exports.handler = async (event) => {
         }
       ],
       max_tokens: 700,
-      temperature: 0.9
+      temperature: 0.95
     });
 
     return {
