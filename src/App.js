@@ -27,23 +27,37 @@ const topics = [
 ];
 
 function App() {
-  const [fighter1, setFighter1] = useState(characters[0]);
-  const [fighter2, setFighter2] = useState(characters[1]);
+  const [fighter1, setFighter1] = useState("Trump");
+  const [fighter2, setFighter2] = useState("Einstein");
   const [tone, setTone] = useState("Funny");
-  const [topic, setTopic] = useState(topics[0]);
+  const [topic, setTopic] = useState("Should aliens be allowed to vote?");
   const [debateText, setDebateText] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const getAvatarUrl = (name) => `/avatars/${name.toLowerCase().replace(/ /g, '')}.png`;
 
-  const generateDebate = () => {
-    const samples = {
-      Trump: "Aliens should absolutely vote. They've got terrific instincts, just terrific.",
-      Einstein: "Only if they understand the theory of democracy.",
-    };
-    setDebateText({
-      fighter1Text: samples[fighter1] || `${fighter1} argues passionately.`,
-      fighter2Text: samples[fighter2] || `${fighter2} disagrees with intense logic.`
-    });
+  const generateDebate = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/.netlify/functions/generateDebate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fighter1, fighter2, topic, tone })
+      });
+      const data = await response.json();
+      if (data.output) {
+        const lines = data.output.split(/\n+/).filter(line => line.trim());
+        setDebateText(lines);
+      } else {
+        setDebateText(["Sorry, something went wrong."]);
+      }
+    } catch (err) {
+      setDebateText(["Error calling debate function."]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,7 +87,7 @@ function App() {
       </div>
 
       <div className="tones">
-        {["Funny", "Serious", "Absurd"].map(t => (
+        {['Funny', 'Serious', 'Absurd'].map(t => (
           <button
             key={t}
             className={tone === t ? "active" : ""}
@@ -84,19 +98,25 @@ function App() {
         ))}
       </div>
 
-      <button className="generate-button" onClick={generateDebate}>Generate Debate</button>
+      <button className="generate-button" onClick={generateDebate} disabled={loading}>
+        {loading ? "Generating..." : "Generate Debate"}
+      </button>
 
       {debateText && (
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
-          <div className="speech">
-            <img src={getAvatarUrl(fighter1)} alt={fighter1} />
-            <div className="bubble">{debateText.fighter1Text}</div>
-          </div>
-          <div className="speech right">
-            <div className="bubble">{debateText.fighter2Text}</div>
-            <img src={getAvatarUrl(fighter2)} alt={fighter2} />
-          </div>
+          {debateText.map((line, index) => {
+            const isF1 = line.includes(fighter1);
+            const speaker = isF1 ? fighter1 : fighter2;
+            const avatar = getAvatarUrl(speaker);
+            return (
+              <div className={`speech ${isF1 ? '' : 'right'}`} key={index}>
+                {isF1 && <img src={avatar} alt={speaker} />}
+                <div className="bubble">{line.replace(`[${speaker}]:`, '').trim()}</div>
+                {!isF1 && <img src={avatar} alt={speaker} />}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
