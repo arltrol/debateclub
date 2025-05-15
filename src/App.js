@@ -1,40 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const characters = ["Trump", "Einstein", "Steve", "Noob", "Barbie", "Batman", "Elon Musk", "Gordon Ramsay", "MrBeast", "Shakespeare"];
-
-const topics = [
-  "Should aliens be allowed to vote?",
-  "Can pineapple belong on pizza?",
-  "Was the moon landing real?",
-  "Should time travel be taxed?",
-  "Is AI smarter than humans?",
-  "Should Mondays be illegal?",
-  "Can fish have jobs?",
-  "Do video games make better leaders?",
-  "Is TikTok the new school?",
-  "Should cats be allowed in politics?",
-  "Are influencers more powerful than presidents?",
-  "Do robots deserve holidays?",
-  "Should memes be a language?",
-  "Can the world be ruled by children?",
-  "Would dinosaurs survive a TikTok challenge?",
-  "Is cereal soup?",
-  "Should homework be abolished forever?",
-  "Do ghosts pay rent?",
-  "Should pets be able to vote?",
-  "Can Minecraft teach real architecture?"
-];
-
 function App() {
-  const [fighter1, setFighter1] = useState("Trump");
-  const [fighter2, setFighter2] = useState("Einstein");
+  const [fighters, setFighters] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [fighter1, setFighter1] = useState('');
+  const [fighter2, setFighter2] = useState('');
   const [tone, setTone] = useState("Funny");
-  const [topic, setTopic] = useState("Should aliens be allowed to vote?");
+  const [topic, setTopic] = useState('');
   const [debateText, setDebateText] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const getAvatarUrl = (name) => `/avatars/${name.toLowerCase().replace(/ /g, '')}.png`;
+
+  useEffect(() => {
+    fetch('/fighters.txt')
+      .then(res => res.text())
+      .then(text => {
+        const list = text.trim().split('\n');
+        setFighters(list);
+        setFighter1(list[0] || '');
+        setFighter2(list[1] || '');
+      });
+
+    fetch('/topics.txt')
+      .then(res => res.text())
+      .then(text => {
+        const list = text.trim().split('\n');
+        setTopics(list);
+        setTopic(list[0] || '');
+      });
+  }, []);
 
   const generateDebate = async () => {
     setLoading(true);
@@ -68,13 +64,13 @@ function App() {
         <div>
           <label>Choose Fighter 1:</label>
           <select value={fighter1} onChange={(e) => setFighter1(e.target.value)}>
-            {characters.map((char) => <option key={char} value={char}>{char}</option>)}
+            {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
           </select>
         </div>
         <div>
           <label>Choose Fighter 2:</label>
           <select value={fighter2} onChange={(e) => setFighter2(e.target.value)}>
-            {characters.map((char) => <option key={char} value={char}>{char}</option>)}
+            {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
           </select>
         </div>
       </div>
@@ -106,7 +102,7 @@ function App() {
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
           {debateText.map((line, index) => {
-            const match = line.match(/^\[?(.*?)\]?:/); // [Trump]: or Trump:
+            const match = line.match(/^\[?(.*?)\]?:/);
             const speaker = match ? match[1].trim() : (index % 2 === 0 ? fighter1 : fighter2);
             const isF1 = speaker === fighter1;
             const avatar = getAvatarUrl(speaker);
