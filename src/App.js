@@ -106,14 +106,17 @@ function App() {
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
           {debateText.map((line, index) => {
-            const isF1 = line.includes(fighter1);
-            const speaker = isF1 ? fighter1 : fighter2;
+            const match = line.match(/^\[?(.*?)\]?:/); // [Trump]: or Trump:
+            const speaker = match ? match[1].trim() : (index % 2 === 0 ? fighter1 : fighter2);
+            const isF1 = speaker === fighter1;
             const avatar = getAvatarUrl(speaker);
+            const textOnly = line.replace(/^\[?(.*?)\]?:/, '').trim();
+
             return (
               <div className={`speech ${isF1 ? '' : 'right'}`} key={index}>
-                {isF1 && <img src={avatar} alt={speaker} />}
-                <div className="bubble">{line.replace(`[${speaker}]:`, '').trim()}</div>
-                {!isF1 && <img src={avatar} alt={speaker} />}
+                {isF1 && <img src={avatar} alt={speaker} loading="lazy" />}
+                <div className="bubble">{textOnly}</div>
+                {!isF1 && <img src={avatar} alt={speaker} loading="lazy" />}
               </div>
             );
           })}
