@@ -3,7 +3,7 @@
 const { Configuration, OpenAIApi } = require("openai");
 
 exports.handler = async (event) => {
-  const { fighter1, fighter2, topic, tone } = JSON.parse(event.body);
+  const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
 
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -17,7 +17,8 @@ Each character should speak 5 times, alternating, starting with ${fighter1}.
 Format it exactly as:
 [${fighter1}]: ...
 [${fighter2}]: ...
-...`;
+...
+The entire debate should be written in ${language}.`;
 
   try {
     const completion = await openai.createChatCompletion({
