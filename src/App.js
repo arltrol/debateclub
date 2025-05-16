@@ -8,6 +8,7 @@ function App() {
   const [fighter2, setFighter2] = useState('');
   const [tone, setTone] = useState("Funny");
   const [topic, setTopic] = useState('');
+  const [language, setLanguage] = useState("English");
   const [debateText, setDebateText] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +41,7 @@ function App() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fighter1, fighter2, topic, tone })
+        body: JSON.stringify({ fighter1, fighter2, topic, tone, language })
       });
       const data = await response.json();
       if (data.output) {
@@ -54,6 +55,19 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const surpriseMe = () => {
+    const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const f1 = rand(fighters);
+    let f2 = rand(fighters);
+    while (f2 === f1) f2 = rand(fighters);
+    setFighter1(f1);
+    setFighter2(f2);
+    setTopic(rand(topics));
+    setTone(rand(["Funny", "Serious", "Absurd"]));
+    setLanguage(rand(["English", "Spanish", "German", "French", "Italian", "Portuguese", "Japanese"]));
+    generateDebate();
   };
 
   return (
@@ -82,6 +96,15 @@ function App() {
         </select>
       </div>
 
+      <div>
+        <label>Select Language:</label>
+        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+          {["English", "Spanish", "German", "French", "Italian", "Portuguese", "Japanese"].map(lang => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="tones">
         {['Funny', 'Serious', 'Absurd'].map(t => (
           <button
@@ -96,6 +119,10 @@ function App() {
 
       <button className="generate-button" onClick={generateDebate} disabled={loading}>
         {loading ? "Generating..." : "Generate Debate"}
+      </button>
+
+      <button className="generate-button" onClick={surpriseMe} disabled={loading} style={{ marginTop: '10px', backgroundColor: '#555' }}>
+        🎲 Surprise Me!
       </button>
 
       {debateText && (
