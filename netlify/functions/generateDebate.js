@@ -1,3 +1,14 @@
+exports.handler = async (event) => {
+  let body;
+  try {
+    body = JSON.parse(event.body);
+  } catch (err) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Invalid JSON body" })
+    };
+  }
+  
 const { Configuration, OpenAIApi } = require("openai");
 
 exports.handler = async (event) => {
