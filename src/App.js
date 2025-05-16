@@ -55,34 +55,42 @@ function App() {
     const fighterB = getName(fighter2, useCustomF2, customFighter2);
     const selectedTopic = useCustomTopic ? customTopic : topic;
 
+    const payload = {
+      fighter1: fighterA,
+      fighter2: fighterB,
+      topic: selectedTopic,
+      tone,
+      language
+    };
+
+    console.log("🚀 Sending to API:", payload); // 🔍 DEBUG
+
     setCountdown("Match starting in...");
     for (let i = 3; i > 0; i--) {
       setCountdown(`Match starting in... ${i}`);
       await delay(700);
     }
+
     setCountdown(null);
     setLoading(true);
     try {
       const response = await fetch('/.netlify/functions/generateDebate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fighter1: fighterA,
-          fighter2: fighterB,
-          topic: selectedTopic,
-          tone,
-          language
-        })
+        body: JSON.stringify(payload)
       });
+
       const data = await response.json();
       if (data.output) {
         const lines = data.output.split(/\n+/).filter(line => line.trim());
         setDebate(lines);
         updateShareLink(fighterA, fighterB, selectedTopic, tone, language);
       } else {
+        console.error("❌ API returned:", data); // 🔍 DEBUG
         setDebate(["Sorry, something went wrong."]);
       }
     } catch (err) {
+      console.error("❌ Fetch error:", err); // 🔍 DEBUG
       setDebate(["Error loading debate."]);
     } finally {
       setLoading(false);
