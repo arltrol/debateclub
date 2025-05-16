@@ -162,9 +162,8 @@ function App() {
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
           {debateText.map((line, i) => {
-            const match = line.match(/^\[(.+?)\]/);
-            const name = match ? match[1].trim() : (i % 2 === 0 ? fighter1 : fighter2);
-            const cleanLine = line.replace(/^\[.+?\]:?\s*/, '');
+           const name = i % 2 === 0 ? (useCustomFighter1 ? customFighter1 : fighter1) : (useCustomFighter2 ? customFighter2 : fighter2);
+          const cleanLine = line.replace(/^\[.*?\]:?\s*/, '');
             return (
               <div className={`speech ${i % 2 === 0 ? '' : 'right'}`} key={i}>
                 {i % 2 === 0 && <Avatar name={name} />}
