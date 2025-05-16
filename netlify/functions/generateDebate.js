@@ -1,3 +1,5 @@
+const { Configuration, OpenAIApi } = require("openai");
+
 exports.handler = async (event) => {
   let body;
   try {
@@ -8,11 +10,8 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: "Invalid JSON body" })
     };
   }
-  
-const { Configuration, OpenAIApi } = require("openai");
 
-exports.handler = async (event) => {
-  const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
+  const { fighter1, fighter2, topic, tone, language } = body;
 
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
