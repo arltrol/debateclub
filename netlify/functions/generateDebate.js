@@ -1,44 +1,43 @@
 // File: netlify/functions/generateDebate.js
 
-const { OpenAIApi, Configuration } = require("openai");
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 exports.handler = async (event) => {
-  const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
+  try {
+    const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
 
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  const openai = new OpenAIApi(configuration);
-
-  const prompt = `
+    const prompt = `
 Create a ${tone.toLowerCase()} fictional debate between ${fighter1} and ${fighter2} on the topic "${topic}". 
-The debate must be written in ${language}. Each person should speak 5 times, in alternating order, staying in character.
-Format like this:
+The debate must be written in ${language}. Each person should speak 5 times in alternating order. 
+Stay in character. Format exactly as:
 [${fighter1}]: ...
 [${fighter2}]: ...
-...
 `;
 
-  try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: "You are simulating a fictional debate between two famous characters. Follow the format strictly."
+          content:
+            "You are simulating a fictional debate between two famous or fictional characters. Respond only with the debate lines."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      max_tokens: 800,
-      temperature: 0.9
+      temperature: 0.9,
+      max_tokens: 800
     });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ output: completion.data.choices[0].message.content })
+      body: JSON.stringify({ output: completion.choices[0].message.content })
     };
   } catch (err) {
     return {
