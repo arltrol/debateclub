@@ -4,6 +4,9 @@ import './App.css';
 function App() {
   const [fighters, setFighters] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [useCustomFighter1, setUseCustomFighter1] = useState(false);
+  const [useCustomFighter2, setUseCustomFighter2] = useState(false);
+  const [useCustomTopic, setUseCustomTopic] = useState(false);
   const [fighter1, setFighter1] = useState('');
   const [fighter2, setFighter2] = useState('');
   const [tone, setTone] = useState("Funny");
@@ -34,6 +37,7 @@ function App() {
   }, []);
 
   const generateDebate = async () => {
+    if (!fighter1 || !fighter2 || !topic) return;
     setLoading(true);
     try {
       const response = await fetch("/.netlify/functions/generateDebate", {
@@ -67,6 +71,9 @@ function App() {
     setTopic(rand(topics));
     setTone(rand(["Funny", "Serious", "Absurd"]));
     setLanguage(rand(["English", "Spanish", "German", "French", "Italian", "Portuguese", "Japanese"]));
+    setUseCustomFighter1(false);
+    setUseCustomFighter2(false);
+    setUseCustomTopic(false);
     generateDebate();
   };
 
@@ -76,24 +83,45 @@ function App() {
 
       <div className="selectors">
         <div>
-          <label>Choose Fighter 1:</label>
-          <select value={fighter1} onChange={(e) => setFighter1(e.target.value)}>
-            {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
-          </select>
+          <label>Fighter 1:</label>
+          <div>
+            <label><input type="checkbox" checked={useCustomFighter1} onChange={() => setUseCustomFighter1(!useCustomFighter1)} /> Custom</label>
+          </div>
+          {useCustomFighter1 ? (
+            <input type="text" value={fighter1} onChange={(e) => setFighter1(e.target.value)} maxLength={30} placeholder="Enter fighter name" />
+          ) : (
+            <select value={fighter1} onChange={(e) => setFighter1(e.target.value)}>
+              {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
+            </select>
+          )}
         </div>
         <div>
-          <label>Choose Fighter 2:</label>
-          <select value={fighter2} onChange={(e) => setFighter2(e.target.value)}>
-            {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
-          </select>
+          <label>Fighter 2:</label>
+          <div>
+            <label><input type="checkbox" checked={useCustomFighter2} onChange={() => setUseCustomFighter2(!useCustomFighter2)} /> Custom</label>
+          </div>
+          {useCustomFighter2 ? (
+            <input type="text" value={fighter2} onChange={(e) => setFighter2(e.target.value)} maxLength={30} placeholder="Enter fighter name" />
+          ) : (
+            <select value={fighter2} onChange={(e) => setFighter2(e.target.value)}>
+              {fighters.map((char) => <option key={char} value={char}>{char}</option>)}
+            </select>
+          )}
         </div>
       </div>
 
       <div>
-        <label>Pick a Debate Topic:</label>
-        <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-          {topics.map((t) => <option key={t}>{t}</option>)}
-        </select>
+        <label>Debate Topic:</label>
+        <div>
+          <label><input type="checkbox" checked={useCustomTopic} onChange={() => setUseCustomTopic(!useCustomTopic)} /> Custom</label>
+        </div>
+        {useCustomTopic ? (
+          <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={100} placeholder="Enter debate topic" />
+        ) : (
+          <select value={topic} onChange={(e) => setTopic(e.target.value)}>
+            {topics.map((t) => <option key={t}>{t}</option>)}
+          </select>
+        )}
       </div>
 
       <div>
