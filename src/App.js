@@ -39,7 +39,6 @@ function App() {
   const [language, setLanguage] = useState("English");
   const [debate, setDebate] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(null);
 
   const getName = (name, isCustom, customVal) => isCustom ? customVal || name : name;
 
@@ -47,8 +46,6 @@ function App() {
     const filename = name.toLowerCase().replace(/[^a-z0-9]/g, '');
     return `/avatars/${filename}.png`;
   };
-
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const generateDebate = async () => {
     const fighterA = getName(fighter1, useCustomF1, customFighter1);
@@ -63,16 +60,9 @@ function App() {
       language
     };
 
-    console.log("🚀 Sending to API:", payload); // 🔍 DEBUG
-
-    setCountdown("Match starting in...");
-    for (let i = 3; i > 0; i--) {
-      setCountdown(`Match starting in... ${i}`);
-      await delay(700);
-    }
-
-    setCountdown(null);
+    console.log("🚀 Sending to API:", payload);
     setLoading(true);
+
     try {
       const response = await fetch('/.netlify/functions/generateDebate', {
         method: 'POST',
@@ -86,11 +76,11 @@ function App() {
         setDebate(lines);
         updateShareLink(fighterA, fighterB, selectedTopic, tone, language);
       } else {
-        console.error("❌ API returned:", data); // 🔍 DEBUG
+        console.error("❌ API returned:", data);
         setDebate(["Sorry, something went wrong."]);
       }
     } catch (err) {
-      console.error("❌ Fetch error:", err); // 🔍 DEBUG
+      console.error("❌ Fetch error:", err);
       setDebate(["Error loading debate."]);
     } finally {
       setLoading(false);
@@ -186,12 +176,10 @@ function App() {
       </div>
 
       <button className="generate-button" onClick={generateDebate} disabled={loading}>
-        {loading ? "Loading..." : "Generate Debate"}
+        {loading ? <span className="spinner" /> : "Generate Debate"}
       </button>
 
       <button onClick={surpriseMe}>🎲 Surprise Me!</button>
-
-      {countdown && <p className="countdown">{countdown}</p>}
 
       {debate && (
         <div className="debate-preview">
