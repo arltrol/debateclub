@@ -211,14 +211,12 @@ function App() {
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
           {debateText.map((line, i) => {
-            const name1 = useCustomFighter1 ? customFighter1 : fighter1;
-            const name2 = useCustomFighter2 ? customFighter2 : fighter2;
-            const isF1 = line.includes(name1);
-            const speaker = isF1 ? name1 : name2;
+            const match = line.match(/^\[?(.+?)\]?:/);
+            const speaker = match ? match[1].trim() : (i % 2 === 0 ? (useCustomFighter1 ? customFighter1 : fighter1) : (useCustomFighter2 ? customFighter2 : fighter2));
             return (
-              <div className={`speech ${isF1 ? "" : "right"}`} key={i}>
+              <div className={`speech ${i % 2 === 0 ? "" : "right"}`} key={i}>
                 <Avatar name={speaker} />
-                <div className="bubble">{line.replace(`[${speaker}]:`, "").trim()}</div>
+                <div className="bubble">{line.replace(/^\[?.+?\]?:/, "").trim()}</div>
               </div>
             );
           })}
