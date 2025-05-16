@@ -27,14 +27,11 @@ IMPORTANT: The entire debate must be written in ${language}, including punctuati
 Use this format exactly:
 [${fighter1}]: ...
 [${fighter2}]: ...
-[${fighter1}]: ...
-[${fighter2}]: ...
-(continue alternating until each has spoken 5 times)
 `;
 
   try {
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -45,7 +42,7 @@ Use this format exactly:
           content: prompt,
         },
       ],
-      max_tokens: 900,
+      max_tokens: 800,
       temperature: 0.9,
     });
 
