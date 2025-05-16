@@ -26,7 +26,7 @@ It should be written in ${language}. Each fighter speaks 5 times, one after the 
 
   try {
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
