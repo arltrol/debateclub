@@ -1,43 +1,39 @@
-// File: netlify/functions/generateDebate.js
-
-const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const { Configuration, OpenAIApi } = require("openai");
 
 exports.handler = async (event) => {
-  try {
-    const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
+  const { fighter1, fighter2, topic, tone, language } = JSON.parse(event.body);
 
-    const prompt = `
-Create a ${tone.toLowerCase()} fictional debate between ${fighter1} and ${fighter2} on the topic "${topic}". 
-The debate must be written in ${language}. Each person should speak 5 times in alternating order. 
-Stay in character. Format exactly as:
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+
+  const prompt = `Create a ${tone.toLowerCase()} debate between ${fighter1} and ${fighter2} on the topic "${topic}". 
+It should be written in ${language}. Each fighter speaks 5 times, one after the other. Use this format:
 [${fighter1}]: ...
 [${fighter2}]: ...
 `;
 
-    const completion = await openai.chat.completions.create({
+  try {
+    const completion = await openai.createChatCompletion({
       model: "gpt-4",
       messages: [
         {
           role: "system",
-          content:
-            "You are simulating a fictional debate between two famous or fictional characters. Respond only with the debate lines."
+          content: "You are simulating a fictional debate between two characters. They take turns, 5 lines each, matching the tone and language."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.9,
-      max_tokens: 800
+      max_tokens: 900,
+      temperature: 0.9
     });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ output: completion.choices[0].message.content })
+      body: JSON.stringify({ output: completion.data.choices[0].message.content })
     };
   } catch (err) {
     return {
