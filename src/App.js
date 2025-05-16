@@ -175,9 +175,9 @@ function App() {
         ))}
       </div>
 
-      <button className="generate-button" onClick={generateDebate} disabled={loading}>
-        {loading ? <span className="spinner" /> : "Generate Debate"}
-      </button>
+   <button className="generate-button" onClick={generateDebate} disabled={loading}>
+  {loading ? <span className="spinner">⏳ Generating...</span> : "Generate Debate"}
+</button>
 
       <button onClick={surpriseMe}>🎲 Surprise Me!</button>
 
