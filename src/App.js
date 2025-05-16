@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
 import './App.css';
 
-const characters = [
-  "Trump", "Shakespeare", "Barbie", "Gordon Ramsay", "MrBeast",
-  "Batman", "Minecraft Creeper", "Homer Simpson", "Yoda", "Elon Musk"
+const fightersList = [
+  "Trump",
+  "Einstein",
+  "Barbie",
+  "MrBeast",
+  "Homer Simpson",
+  "Yoda",
+  "Gordon Ramsay",
+  "Batman",
+  "Shakespeare",
+  "Minecraft Creeper"
 ];
 
-const topics = [
+const topicsList = [
   "Should aliens be allowed to vote?",
-  "Can pineapple belong on pizza?",
-  "Should AI run for president?",
-  "Do Minecraft Creepers hold jobs?",
-  "Are memes the new form of literature?",
-  "Should homework be abolished?",
-  "Do cats secretly control the internet?",
-  "Can TikTok replace school?",
-  "Should robots be allowed to marry?",
-  "Is cereal a soup?"
+  "Should pineapple be banned from pizza?",
+  "Is TikTok better than school?",
+  "Can Minecraft Creepers hold jobs?",
+  "Should pets run for president?",
+  "Do ghosts pay rent?",
+  "Is cereal soup?",
+  "Should memes be taught in schools?",
+  "Can robots fall in love?",
+  "Do aliens understand sarcasm?"
 ];
 
 const languages = [
-  "English", "German", "French", "Spanish", "Portuguese", "Italian", "Japanese", "Chinese"
+  "English",
+  "French",
+  "German",
+  "Spanish",
+  "Portuguese",
+  "Italian",
+  "Japanese",
+  "Chinese",
+  "Arabic"
 ];
 
 function App() {
@@ -31,74 +47,64 @@ function App() {
   const [useCustomFighter1, setUseCustomFighter1] = useState(false);
   const [useCustomFighter2, setUseCustomFighter2] = useState(false);
 
-  const [topic, setTopic] = useState(topics[0]);
+  const [topic, setTopic] = useState(topicsList[0]);
   const [customTopic, setCustomTopic] = useState("");
   const [useCustomTopic, setUseCustomTopic] = useState(false);
 
   const [tone, setTone] = useState("Funny");
   const [language, setLanguage] = useState("English");
-
-  const [debateText, setDebateText] = useState(null);
+  const [debate, setDebate] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getAvatarUrl = (name) => {
-    const fileName = name.toLowerCase().replace(/[^a-z0-9]/gi, '');
-    return `/avatars/${fileName}.png`;
+    const filename = name.toLowerCase().replace(/\s/g, '');
+    return `/avatars/${filename}.png`;
   };
 
-  const Avatar = ({ name }) => {
-    const avatarPath = getAvatarUrl(name);
-    return (
-      <img
-        src={avatarPath}
-        alt={name}
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.replaceWith(document.createTextNode(name));
-        }}
-      />
-    );
+  const handleSurprise = () => {
+    const randF1 = fightersList[Math.floor(Math.random() * fightersList.length)];
+    let randF2 = fightersList[Math.floor(Math.random() * fightersList.length)];
+    while (randF2 === randF1) randF2 = fightersList[Math.floor(Math.random() * fightersList.length)];
+    const randTopic = topicsList[Math.floor(Math.random() * topicsList.length)];
+    setUseCustomFighter1(false);
+    setUseCustomFighter2(false);
+    setFighter1(randF1);
+    setFighter2(randF2);
+    setUseCustomTopic(false);
+    setTopic(randTopic);
+    setTone("Funny");
+    setLanguage("English");
+    setDebate([]);
   };
 
   const generateDebate = async () => {
-    const fighter1Name = useCustomFighter1 ? customFighter1 : fighter1;
-    const fighter2Name = useCustomFighter2 ? customFighter2 : fighter2;
-    const debateTopic = useCustomTopic ? customTopic : topic;
+    const finalF1 = useCustomFighter1 ? customFighter1.trim() : fighter1;
+    const finalF2 = useCustomFighter2 ? customFighter2.trim() : fighter2;
+    const finalTopic = useCustomTopic ? customTopic.trim() : topic;
+
+    if (!finalF1 || !finalF2 || !finalTopic) {
+      alert("Please complete fighter names and topic.");
+      return;
+    }
 
     setLoading(true);
     try {
-      const response = await fetch("/.netlify/functions/generateDebate", {
+      const res = await fetch("/.netlify/functions/generateDebate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fighter1: fighter1Name, fighter2: fighter2Name, topic: debateTopic, tone, language })
+        body: JSON.stringify({ fighter1: finalF1, fighter2: finalF2, topic: finalTopic, tone, language })
       });
-      const data = await response.json();
+      const data = await res.json();
       if (data.output) {
-        const lines = data.output.split(/\n+/).filter(line => line.trim());
-        setDebateText(lines);
+        const lines = data.output.split(/\n+/).filter(Boolean);
+        setDebate(lines);
       } else {
-        setDebateText(["Sorry, something went wrong."]);
+        setDebate(["[Error]: No response from AI."]);
       }
     } catch (err) {
-      setDebateText(["Error calling debate function."]);
-    } finally {
-      setLoading(false);
+      setDebate(["[Error]: Failed to fetch debate."]);
     }
-  };
-
-  const surpriseMe = () => {
-    const r1 = characters[Math.floor(Math.random() * characters.length)];
-    let r2;
-    do { r2 = characters[Math.floor(Math.random() * characters.length)]; } while (r1 === r2);
-    const rt = topics[Math.floor(Math.random() * topics.length)];
-    const rl = languages[Math.floor(Math.random() * languages.length)];
-    setFighter1(r1);
-    setFighter2(r2);
-    setTopic(rt);
-    setLanguage(rl);
-    setUseCustomFighter1(false);
-    setUseCustomFighter2(false);
-    setUseCustomTopic(false);
+    setLoading(false);
   };
 
   return (
@@ -109,10 +115,10 @@ function App() {
         <div>
           <label>Fighter 1: <input type="checkbox" checked={useCustomFighter1} onChange={() => setUseCustomFighter1(!useCustomFighter1)} /> Custom</label>
           {useCustomFighter1 ? (
-            <input value={customFighter1} onChange={e => setCustomFighter1(e.target.value)} />
+            <input value={customFighter1} onChange={(e) => setCustomFighter1(e.target.value)} />
           ) : (
-            <select value={fighter1} onChange={e => setFighter1(e.target.value)}>
-              {characters.map(c => <option key={c}>{c}</option>)}
+            <select value={fighter1} onChange={(e) => setFighter1(e.target.value)}>
+              {fightersList.map(f => <option key={f}>{f}</option>)}
             </select>
           )}
         </div>
@@ -120,10 +126,10 @@ function App() {
         <div>
           <label>Fighter 2: <input type="checkbox" checked={useCustomFighter2} onChange={() => setUseCustomFighter2(!useCustomFighter2)} /> Custom</label>
           {useCustomFighter2 ? (
-            <input value={customFighter2} onChange={e => setCustomFighter2(e.target.value)} />
+            <input value={customFighter2} onChange={(e) => setCustomFighter2(e.target.value)} />
           ) : (
-            <select value={fighter2} onChange={e => setFighter2(e.target.value)}>
-              {characters.map(c => <option key={c}>{c}</option>)}
+            <select value={fighter2} onChange={(e) => setFighter2(e.target.value)}>
+              {fightersList.map(f => <option key={f}>{f}</option>)}
             </select>
           )}
         </div>
@@ -132,43 +138,54 @@ function App() {
       <div>
         <label>Debate Topic: <input type="checkbox" checked={useCustomTopic} onChange={() => setUseCustomTopic(!useCustomTopic)} /> Custom</label>
         {useCustomTopic ? (
-          <input value={customTopic} onChange={e => setCustomTopic(e.target.value)} />
+          <input value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} />
         ) : (
-          <select value={topic} onChange={e => setTopic(e.target.value)}>
-            {topics.map(t => <option key={t}>{t}</option>)}
+          <select value={topic} onChange={(e) => setTopic(e.target.value)}>
+            {topicsList.map(t => <option key={t}>{t}</option>)}
           </select>
         )}
       </div>
 
       <div>
         <label>Select Language:</label>
-        <select value={language} onChange={e => setLanguage(e.target.value)}>
+        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
           {languages.map(l => <option key={l}>{l}</option>)}
         </select>
       </div>
 
       <div className="tones">
-        {["Funny", "Serious", "Absurd"].map(t => (
-          <button key={t} className={tone === t ? "active" : ""} onClick={() => setTone(t)}>{t}</button>
+        {['Funny', 'Serious', 'Absurd'].map(t => (
+          <button
+            key={t}
+            className={tone === t ? "active" : ""}
+            onClick={() => setTone(t)}
+          >
+            {t}
+          </button>
         ))}
       </div>
 
       <button className="generate-button" onClick={generateDebate} disabled={loading}>
         {loading ? "Generating..." : "Generate Debate"}
       </button>
-      <button onClick={surpriseMe}>🎲 Surprise Me!</button>
 
-      {debateText && (
+      <button onClick={handleSurprise}>🎲 Surprise Me!</button>
+
+      {debate.length > 0 && (
         <div className="debate-preview">
           <h2>Debate Preview:</h2>
-          {debateText.map((line, i) => {
-           const name = i % 2 === 0 ? (useCustomFighter1 ? customFighter1 : fighter1) : (useCustomFighter2 ? customFighter2 : fighter2);
-          const cleanLine = line.replace(/^\[.*?\]:?\s*/, '');
+          {debate.map((line, i) => {
+            const name = i % 2 === 0
+              ? (useCustomFighter1 ? customFighter1.trim() : fighter1)
+              : (useCustomFighter2 ? customFighter2.trim() : fighter2);
+            const avatarUrl = getAvatarUrl(name);
+            const cleanLine = line.replace(/^\[.*?\]:?\s*/, '');
+
             return (
-              <div className={`speech ${i % 2 === 0 ? '' : 'right'}`} key={i}>
-                {i % 2 === 0 && <Avatar name={name} />}
+              <div key={i} className={`speech ${i % 2 === 0 ? '' : 'right'}`}>
+                {i % 2 === 0 && <img src={avatarUrl} onError={(e) => e.target.style.display = 'none'} alt={name} />}
                 <div className="bubble">{cleanLine}</div>
-                {i % 2 !== 0 && <Avatar name={name} />}
+                {i % 2 !== 0 && <img src={avatarUrl} onError={(e) => e.target.style.display = 'none'} alt={name} />}
               </div>
             );
           })}
